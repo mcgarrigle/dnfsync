@@ -3,21 +3,32 @@
 import os
 import sys
 import requests
+
 import xml.etree.ElementTree as ET
 
-url = sys.argv[1]
+def get(url):
+    print(f'GET {url}')
+    r = requests.get(url)
+    return r.text
 
-print(f"DNF Sync {url}")
+def location(baseurl):
+    tree = ET.fromstring(get(f"{baseurl}/repodata/repomd.xml"))
+    database = tree.find('{http://linux.duke.edu/metadata/repo}data[@type="primary"]')
+    location = database.find('{http://linux.duke.edu/metadata/repo}location')
+    return f"{baseurl}/{location.attrib['href']}"
 
-r = requests.get(f"{url}/repodata/repomd.xml")
-print(r.text)
+def database(url):
+    doc = ET.fromstring(get(url))
+    print(doc)
 
-root = ET.fromstring(r.text)
-# print(root)
+def packages(baseurl):
+    url = location(baseurl)
+    doc = database(url)
+    return ['foo','bar']
 
-d = root.find('.//{http://linux.duke.edu/metadata/repo}data[@type="primary_db"]')
-print(d.attrib)
-l = d.find('{http://linux.duke.edu/metadata/repo}location')
-print(l)
-print(l.attrib['href'])
+def main(baseurl):
+    for package in packages(baseurl):
+        print(package)
 
+if __name__ == '__main__':
+    main(sys.argv[1])
