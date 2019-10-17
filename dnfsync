@@ -3,7 +3,7 @@
 import os
 import sys
 import requests
-
+import gzip
 import xml.etree.ElementTree as ET
 
 def get(url):
@@ -18,8 +18,9 @@ def location(baseurl):
     return f"{baseurl}/{location.attrib['href']}"
 
 def database(url):
-    doc = ET.fromstring(get(url))
-    print(doc)
+    text = gzip.decompress(str.encode(get(url)))
+    # tree = ET.fromstring(gzip.decompress(str.encode(get(url))))
+    print(text)
 
 def packages(baseurl):
     url = location(baseurl)
