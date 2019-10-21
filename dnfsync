@@ -7,7 +7,7 @@ import gzip
 import xml.etree.ElementTree as ET
 
 def get(url):
-    print(f'GET {url}')
+    # print(f'GET {url}')
     r = requests.get(url)
     return r
 
@@ -33,12 +33,23 @@ def packages(baseurl):
     p = [ href(d.find('{http://linux.duke.edu/metadata/common}location')) for d in items]
     return p
 
-def download(url):
-    print(url)
+def download(url, folder):
+    filename = os.path.basename(url)
+    path = os.path.join(folder, filename)
+    if os.path.exists(path):
+        print(filename)
+        return
+    else:
+        rpm = get(url).content
+        with open(path, 'wb') as f:
+            f.write(rpm)
+        print(f"{filename} downloaded")
 
-def main(baseurl):
+def main(baseurl, folder):
+    if not os.path.isdir(folder):
+        os.makedirs(folder)
     for package in packages(baseurl):
-        download(f"{baseurl}/{package}")
+        download(f"{baseurl}/{package}", folder)
 
 if __name__ == '__main__':
-    main(sys.argv[1])
+    main(sys.argv[1], sys.argv[2])
