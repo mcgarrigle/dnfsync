@@ -2,6 +2,7 @@
 
 import os
 import sys
+import argparse
 import requests
 import gzip
 import xml.etree.ElementTree as ET
@@ -33,23 +34,30 @@ def packages(baseurl):
     p = [ href(d.find('{http://linux.duke.edu/metadata/common}location')) for d in items]
     return p
 
-def download(url, folder):
+def download(url, directory):
     filename = os.path.basename(url)
-    path = os.path.join(folder, filename)
+    path     = os.path.join(directory, filename)
     if os.path.exists(path):
-        print(filename)
+        print(f"s {filename}")
         return
     else:
         rpm = get(url).content
         with open(path, 'wb') as f:
             f.write(rpm)
-        print(f"{filename} downloaded")
+        print(f"d {filename}")
 
-def main(baseurl, folder):
-    if not os.path.isdir(folder):
-        os.makedirs(folder)
+def sync(baseurl, directory):
+    if not os.path.isdir(directory):
+        os.makedirs(directory)
     for package in packages(baseurl):
-        download(f"{baseurl}/{package}", folder)
+        download(f"{baseurl}/{package}", directory)
+
+def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("-u", "--url", help="url of repo")
+    parser.add_argument("-d", "--directory", help="directory for repo to be downloaded into", default='.')
+    args = parser.parse_args()
+    sync(args.url, args.directory)
 
 if __name__ == '__main__':
-    main(sys.argv[1], sys.argv[2])
+    main()
