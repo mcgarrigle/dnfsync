@@ -9,18 +9,19 @@ import xml.etree.ElementTree as ET
 def get(url):
     print(f'GET {url}')
     r = requests.get(url)
-    return r.text
+    return r
 
 def location(baseurl):
-    tree = ET.fromstring(get(f"{baseurl}/repodata/repomd.xml"))
+    tree = ET.fromstring(get(f"{baseurl}/repodata/repomd.xml").text)
     database = tree.find('{http://linux.duke.edu/metadata/repo}data[@type="primary"]')
     location = database.find('{http://linux.duke.edu/metadata/repo}location')
     return f"{baseurl}/{location.attrib['href']}"
 
 def database(url):
-    text = gzip.decompress(str.encode(get(url)))
-    # tree = ET.fromstring(gzip.decompress(str.encode(get(url))))
-    print(text)
+    r = get(url)
+    text = gzip.decompress(r.content)
+    tree = ET.fromstring(text)
+    print(tree)
 
 def packages(baseurl):
     url = location(baseurl)
