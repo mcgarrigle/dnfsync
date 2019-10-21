@@ -11,6 +11,9 @@ def get(url):
     r = requests.get(url)
     return r
 
+def href(e):
+    return e.attrib['href']
+
 def location(baseurl):
     tree = ET.fromstring(get(f"{baseurl}/repodata/repomd.xml").text)
     database = tree.find('{http://linux.duke.edu/metadata/repo}data[@type="primary"]')
@@ -21,16 +24,21 @@ def database(url):
     r = get(url)
     text = gzip.decompress(r.content)
     tree = ET.fromstring(text)
-    print(tree)
+    return tree
 
 def packages(baseurl):
     url = location(baseurl)
     doc = database(url)
-    return ['foo','bar']
+    items = doc.findall('{http://linux.duke.edu/metadata/common}package')
+    p = [ href(d.find('{http://linux.duke.edu/metadata/common}location')) for d in items]
+    return p
+
+def download(url):
+    print(url)
 
 def main(baseurl):
     for package in packages(baseurl):
-        print(package)
+        download(f"{baseurl}/{package}")
 
 if __name__ == '__main__':
     main(sys.argv[1])
